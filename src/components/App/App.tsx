@@ -5,30 +5,29 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-
+import { useDebounce } from "use-debounce";
 import { Toaster } from "react-hot-toast";
-import css from "./App.module.css";
 import NoteList from "../NoteList/NoteList";
 import { fetchNotes, createNote, deleteNote } from "../../services/noteService";
-
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import Pagination from "../Pagination/Pagination";
 import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
-
 import type { NoteFormValues } from "../../types/note";
 import SearchBox from "../SearchBox/SearchBox";
+import css from "./App.module.css";
 
 function App() {
   const [query, setQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const queryClient = useQueryClient();
+  const [debouncedQuery] = useDebounce(query, 800);
 
   const { data, isSuccess, error, isError, isLoading } = useQuery({
-    queryKey: ["notes", query, currentPage],
-    queryFn: () => fetchNotes(query, currentPage),
+    queryKey: ["notes", debouncedQuery, currentPage],
+    queryFn: () => fetchNotes(debouncedQuery, currentPage),
     // enabled: query !== "",
     retry: 0,
     placeholderData: keepPreviousData,
