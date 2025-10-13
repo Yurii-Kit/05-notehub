@@ -14,18 +14,28 @@ import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import Pagination from "../Pagination/Pagination";
 import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
-import type { NoteFormValues } from "../../types/note";
+import type { NoteFormValues, FetchNoteResponse } from "../../types/note";
 import SearchBox from "../SearchBox/SearchBox";
 import css from "./App.module.css";
 
 function App() {
   const [query, setQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const queryClient = useQueryClient();
   const [debouncedQuery] = useDebounce(query, 800);
 
-  const { data, isSuccess, error, isError, isLoading } = useQuery({
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const modalOpen = () => {
+    setIsModalOpen(true);
+  };
+  const modalClose = () => {
+    setIsModalOpen(false);
+  };
+
+  const { data, isSuccess, error, isError, isLoading } = useQuery<
+    FetchNoteResponse,
+    Error
+  >({
     queryKey: ["notes", debouncedQuery, currentPage],
     queryFn: () => fetchNotes(debouncedQuery, currentPage),
     // enabled: query !== "",
@@ -40,8 +50,10 @@ function App() {
     mutationFn: (newNote: NoteFormValues) => createNote(newNote),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      modalClose();
     },
   });
+
   const handleAddNote = (noteData: NoteFormValues) => {
     createMutation.mutate(noteData);
   };
@@ -61,13 +73,6 @@ function App() {
     const searchQuary = newQuery.trim().toLowerCase();
     setQuery(searchQuary);
     setCurrentPage(1);
-  };
-
-  const modalOpen = () => {
-    setIsModalOpen(true);
-  };
-  const modalClose = () => {
-    setIsModalOpen(false);
   };
 
   return (

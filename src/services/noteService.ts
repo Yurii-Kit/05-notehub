@@ -1,16 +1,11 @@
 import axios, { type AxiosResponse } from "axios";
 import { type Note } from "../types/note";
-import type { NoteFormValues } from "../types/note";
+import type { NoteFormValues, FetchNoteResponse } from "../types/note";
 
 const myKey = import.meta.env.VITE_NOTEHUB_TOKEN;
 
 axios.defaults.baseURL = "https://notehub-public.goit.study/api/";
 axios.defaults.headers.common["Authorization"] = `Bearer ${myKey}`;
-
-interface FetchNoteResponse {
-  notes: Note[];
-  totalPages: number;
-}
 
 export const fetchNotes = async (
   keyword: string,
@@ -23,9 +18,7 @@ export const fetchNotes = async (
   return response.data;
 };
 
-export const createNote = async (
-  newNote: NoteFormValues
-): Promise<NoteFormValues> => {
+export const createNote = async (newNote: NoteFormValues): Promise<Note> => {
   const response: AxiosResponse<Note> = await axios.post("notes", newNote);
   return response.data;
 };

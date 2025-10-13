@@ -14,6 +14,11 @@ export interface NoteFormValues {
   tag: NoteTag;
 }
 
+export interface FetchNoteResponse {
+  notes: Note[];
+  totalPages: number;
+}
+
 // Todo, Work, Personal, Meeting, Shopping;
 //  {
 //       "id": "65ca67e7ae7f10c88b598384",
