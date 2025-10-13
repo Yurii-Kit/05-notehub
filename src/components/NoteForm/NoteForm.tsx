@@ -1,13 +1,14 @@
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Formik, Form, Field, ErrorMessage as FormikError } from "formik";
 import type { FormikHelpers } from "formik";
 import * as Yup from "yup";
+
+import { createNote } from "../../services/noteService";
+import type { NoteFormValues, NoteTag } from "../../types/note";
 import css from "./NoteForm.module.css";
-import { type NoteTag } from "../../types/note";
-import type { NoteFormValues } from "../../types/note";
 
 interface NoteFormProps {
   onClose: () => void;
-  onSubmit: (values: NoteFormValues) => void;
 }
 
 const tagOptions: NoteTag[] = [
@@ -19,29 +20,32 @@ const tagOptions: NoteTag[] = [
 ];
 
 const validationSchema = Yup.object({
-  title: Yup.string()
-    .min(3, "Title must be at least 3 characters")
-    .max(50, "Title must be at most 50 characters")
-    .required("Title is required"),
-  content: Yup.string().max(500, "Content must be at most 500 characters"),
-  tag: Yup.mixed<NoteTag>()
-    .oneOf(tagOptions, "Invalid tag")
-    .required("Tag is required"),
+  title: Yup.string().min(3).max(50).required("Title is required"),
+  content: Yup.string().max(500),
+  tag: Yup.mixed<NoteTag>().oneOf(tagOptions).required("Tag is required"),
 });
 
-// ✅ Function declaration
-export default function NoteForm({ onClose, onSubmit }: NoteFormProps) {
+export default function NoteForm({ onClose }: NoteFormProps) {
   const initialValues: NoteFormValues = {
     title: "",
     content: "",
     tag: "Todo",
   };
+  const queryClient = useQueryClient();
+
+  const createMutation = useMutation({
+    mutationFn: (values: NoteFormValues) => createNote(values),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      onClose();
+    },
+  });
 
   const handleSubmit = (
     values: NoteFormValues,
     actions: FormikHelpers<NoteFormValues>
   ) => {
-    onSubmit(values);
+    createMutation.mutate(values);
     actions.resetForm();
   };
 
@@ -53,44 +57,40 @@ export default function NoteForm({ onClose, onSubmit }: NoteFormProps) {
     >
       {({ isSubmitting }) => (
         <Form className={css.form}>
-          {/* Title */}
           <div className={css.formGroup}>
             <label htmlFor="title">Title</label>
             <Field id="title" name="title" type="text" className={css.input} />
-            <ErrorMessage name="title" component="span" className={css.error} />
+            <FormikError name="title" component="span" className={css.error} />
           </div>
 
-          {/* Content */}
           <div className={css.formGroup}>
             <label htmlFor="content">Content</label>
             <Field
+              as="textarea"
               id="content"
               name="content"
-              as="textarea"
               rows={8}
               className={css.textarea}
             />
-            <ErrorMessage
+            <FormikError
               name="content"
               component="span"
               className={css.error}
             />
           </div>
 
-          {/* Tag */}
           <div className={css.formGroup}>
             <label htmlFor="tag">Tag</label>
-            <Field id="tag" name="tag" as="select" className={css.select}>
+            <Field as="select" id="tag" name="tag" className={css.select}>
               {tagOptions.map((tag) => (
                 <option key={tag} value={tag}>
                   {tag}
                 </option>
               ))}
             </Field>
-            <ErrorMessage name="tag" component="span" className={css.error} />
+            <FormikError name="tag" component="span" className={css.error} />
           </div>
 
-          {/* Buttons */}
           <div className={css.actions}>
             <button
               type="button"
@@ -99,7 +99,6 @@ export default function NoteForm({ onClose, onSubmit }: NoteFormProps) {
             >
               Cancel
             </button>
-
             <button
               type="submit"
               className={css.submitButton}
