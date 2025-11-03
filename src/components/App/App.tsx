@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import { useQuery } from "@tanstack/react-query";
 import Modal from "../Modal/Modal";
 import NoteList from "../NoteList/NoteList";
@@ -12,9 +13,17 @@ import type { FetchNoteResponse } from "../../types/note";
 import css from "./App.module.css";
 
 export default function App() {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [query, setQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const [query, setQuery] = useState<string>("");
+  const debouncedSetQuery = useDebouncedCallback((newQuery: string) => {
+    setQuery(newQuery);
+    setCurrentPage(1);
+  }, 800);
+
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   const { data, isLoading, isError, error } = useQuery<
     FetchNoteResponse,
@@ -24,13 +33,10 @@ export default function App() {
     queryFn: () => fetchNotes(query, currentPage),
   });
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox setQuery={setQuery} setCurrentPage={setCurrentPage} />
+        <SearchBox text={query} onSearch={debouncedSetQuery} />
         {data && data.totalPages > 1 && (
           <Pagination
             totalPages={data.totalPages}

@@ -1,31 +1,21 @@
-import { useState, useEffect } from "react";
-import { useDebounce } from "use-debounce";
 import css from "./SearchBox.module.css";
 
 interface SearchBoxProps {
-  setQuery: (query: string) => void;
-  setCurrentPage: (page: number) => void;
+  text: string;
+  onSearch: (newSearchQuery: string) => void;
 }
 
-export default function SearchBox({
-  setQuery,
-  setCurrentPage,
-}: SearchBoxProps) {
-  const [localQuery, setLocalQuery] = useState<string>("");
-  const [debouncedQuery] = useDebounce(localQuery, 800);
-
-  useEffect(() => {
-    setQuery(debouncedQuery);
-    setCurrentPage(1);
-  }, [debouncedQuery, setQuery, setCurrentPage]);
+export default function SearchBox({ text, onSearch }: SearchBoxProps) {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onSearch(event.target.value);
+  };
 
   return (
     <input
+      type="text"
       className={css.input}
-      value={localQuery}
-      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-        setLocalQuery(event.target.value)
-      }
+      defaultValue={text}
+      onChange={handleChange}
       placeholder="Search notes"
     />
   );
