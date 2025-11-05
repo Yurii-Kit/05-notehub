@@ -1,0 +1,1 @@
+(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[259],{6703:(e,s,t)=>{"use strict";t.r(s),t.d(s,{default:()=>l});var n=t(5155);function l(e){let{error:s}=e;return(0,n.jsxs)("p",{children:["Could not fetch note details. ",s.message]})}},7490:(e,s,t)=>{Promise.resolve().then(t.bind(t,6703))}},e=>{e.O(0,[441,255,358],()=>e(e.s=7490)),_N_E=e.O()}]);

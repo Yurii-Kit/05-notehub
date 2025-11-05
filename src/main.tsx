@@ -4,7 +4,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { StrictMode } from "react";
 import "modern-normalize";
 import "./index.css";
-import App from "./components/App/App.tsx";
+import App from "./components/App/App";
 
 const queryClient = new QueryClient();
 
